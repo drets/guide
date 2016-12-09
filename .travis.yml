@@ -1,14 +1,21 @@
 sudo: true
+dist: trusty
 
 language: c
 
+env:
+  - CXX=g++-4.8
 addons:
   apt:
+    sources:
+      - google-chrome
+      - ubuntu-toolchain-r-test
     packages:
-    # GHC
-    - libgmp-dev
-    # Selenium
-    - xvfb
+      - google-chrome-stable
+      - g++-4.8
+      # GHC
+      - libgmp-dev
+
 
 cache:
   directories:
@@ -28,16 +35,16 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
-- wget http://chromedriver.storage.googleapis.com/2.9/chromedriver_linux64.zip
+- travis_retry wget http://chromedriver.storage.googleapis.com/2.25/chromedriver_linux64.zip
 - unzip chromedriver_linux64.zip
-- chmod +x chromedriver
-- sudo mv -f chromedriver /usr/local/share/chromedriver
-- sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
-- sudo ln -s /usr/local/share/chromedriver /usr/bin/chromedriver
+- sudo chmod u+x chromedriver
+- sudo mv chromedriver /usr/bin/
 
 before_script:
-- sh -e /etc/init.d/xvfb start
+- "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
 - export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start &
+- google-chrome --version
 - travis_retry wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
 - java -jar selenium-server-standalone-2.53.1.jar 2> /dev/null &
 - sleep 5
